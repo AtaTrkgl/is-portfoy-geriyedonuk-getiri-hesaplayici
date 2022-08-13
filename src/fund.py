@@ -42,7 +42,7 @@ def get_fund_worth(fund_dict) -> float:
     return balance
 
 
-def calculate_fund_profit(df) -> float:
+def calculate_fund_profit(df, excluded_funds) -> float:
     fund_dict = {}
     balance = 0
     for i in reversed(range(1, len(df["İşlem"]) + 1)):
@@ -50,6 +50,7 @@ def calculate_fund_profit(df) -> float:
         
         description = df["Açıklama"][i].replace(":+", ": +")
         fund = description.split("-")[0].strip()
+        if fund in excluded_funds: continue
         splited_desc = description.split(" ")
 
         if action_type in FUND_CODES:

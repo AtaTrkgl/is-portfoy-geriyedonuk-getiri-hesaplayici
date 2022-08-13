@@ -1,6 +1,7 @@
 from os import listdir
 import pandas as pd
 import warnings
+from datetime import datetime
 
 from fund import calculate_fund_profit
 from other_commisions import calculate_other_commisions
@@ -29,6 +30,11 @@ if __name__ == "__main__":
     if account_file_name == "":
         assert "Account file couldn't be found"
 
+    start_date_str = input("Please Enter a start date (DD-MM-YYYY): ")
+    start_date = datetime.strptime(start_date_str, "%d-%m-%Y") if start_date_str != "" else datetime(1990, 1, 1)
+    excluded_stocks = input("Enter stock names you want to excluded, seperated by comma: ").upper().split(",")
+    excluded_funds = input("Enter fund codes you want to excluded, seperated by comma: ").split(",")
+
     # === Read the account history file ===
 
     # Remove the info texts
@@ -43,12 +49,19 @@ if __name__ == "__main__":
     account_history = account_history.iloc[:-7]
     account_history.columns = headers
 
+    # Clear previous data
+    for i, row in enumerate(account_history.iloc):
+        date = datetime.strptime(row["İşlem Tarihi"].split("-")[0].strip(), "%d/%m/%Y")
+        if date < start_date:
+            account_history = account_history.iloc[:i]
+            break
+
     # Calculate the profits
     print("\n" + "=" * 20 + " FUNDS " + "=" * 20)
-    fund_profit = calculate_fund_profit(account_history)
+    fund_profit = calculate_fund_profit(account_history, excluded_funds)
 
     print("\n" + "=" * 20 + " STOCKS " + "=" * 20)
-    stock_profit, stock_commisions = calculate_stock_profit(account_history)
+    stock_profit, stock_commisions = calculate_stock_profit(account_history, excluded_stocks)
 
     taxes, keeping = calculate_other_commisions(account_history)
 
@@ -59,7 +72,7 @@ if __name__ == "__main__":
 Calculated Fund Profit:           {fund_profit:.2f}₺
 Calculated Stock Profit:          {stock_profit + stock_commisions:.2f}₺
 
-=================== EXPANSES= ==================
+=================== EXPANSES ===================
 Calculated Net Stock Commisions: -{stock_commisions:.2f}₺
 Calculated Taxes Commisions:      {taxes:.2f}₺
 Calculated Keeping Commisions:    {keeping:.2f}₺

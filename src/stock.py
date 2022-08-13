@@ -26,7 +26,7 @@ def get_stock_prices(stocks_dict: dict) -> float:
     return balance
 
 
-def calculate_stock_profit(df) -> float:
+def calculate_stock_profit(df, excluded_stocks) -> float:
     stock_inventory = {}
     profit = 0
     total_commision = 0
@@ -36,6 +36,7 @@ def calculate_stock_profit(df) -> float:
         
         description = df["Açıklama"][i]
         stock = description.split("-")[0].strip()
+        if stock in excluded_stocks: continue
         splited_desc = description.split(" ")
 
         # Public offer order
