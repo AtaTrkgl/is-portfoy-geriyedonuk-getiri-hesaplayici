@@ -10,11 +10,11 @@ This project aims to calculate the net profit from the investment account statem
 
 2. Put the account statement into this directory.
 
-3. Install the python [Docs](https://wiki.python.org/moin/BeginnersGuide/Download)
+3. Install python [(Docs)](https://wiki.python.org/moin/BeginnersGuide/Download)
 
 4. Install the required python packages using the following command:
 
-```terminal
+```console
 pip install -r requirements.txt
 ```
 
