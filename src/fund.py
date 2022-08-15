@@ -1,15 +1,16 @@
-import pandas as pd
 from requests import get
 from bs4 import BeautifulSoup
 from fund_ids import FUND_ID_TO_CODE
+from rich import print
 
-from utilities import add_to_dict, currency_to_number
+from utilities import add_to_dict, currency_to_number, get_currency_string
 
 FUND_CODES = ["MN", "73", "72"]
 FUND_PRICES_URL = "https://www.isportfoy.com.tr/tr/yatirim-fonlari"
 
-def get_fund_prices() -> dict:
-    prices_dict = {}
+# Returns a dictionary of (fund label, fund price) where keys are fund codes.
+def get_fund_data() -> dict:
+    data_dict = {}
     response = get(FUND_PRICES_URL)
     soup = BeautifulSoup(response.text, "html.parser")
     rows = soup.find_all("tr")
@@ -22,29 +23,24 @@ def get_fund_prices() -> dict:
         if len(table_data) == 0:
             continue
 
-        prices_dict[span.contents[0]] = currency_to_number(table_data[4].find("a").contents[0])
+        data_dict[span.contents[0]] = (
+            table_data[1].find("a").contents[0].replace("*", "").strip(),
+            currency_to_number(table_data[4].find("a").contents[0]),
+        )
     
-    return prices_dict
+    return data_dict
 
-def get_fund_worth(fund_dict) -> float:
-    if len(fund_dict) == 0:
-        return 0
-
-    prices_dict = get_fund_prices()
-    
-    balance = 0
-    print("You still have funds that you haven't sold out yet.")
-    print("Calculated the following worth from the funds you own:\n")
+def get_fund_worth(fund_dict: dict, prices: dict) -> dict:
+    worths = {}
     for key in fund_dict.keys():
         id = FUND_ID_TO_CODE[key]
-        print(f"{id} is now worth {prices_dict[id]} per fund, making a total of {prices_dict[id] * fund_dict[key]:.2f}₺")
-        balance += prices_dict[id] * fund_dict[key]
-    return balance
+        add_to_dict(worths, key, prices[id] * fund_dict[key])
+    return worths
 
 
 def calculate_fund_profit(df, excluded_funds) -> float:
     fund_dict = {}
-    balance = 0
+    profits = {}
     for i in reversed(range(1, len(df["İşlem"]) + 1)):
         action_type = df["İşlem"][i]
         
@@ -59,7 +55,7 @@ def calculate_fund_profit(df, excluded_funds) -> float:
             if price <= 0:
                 continue
             
-            balance -= price * amount
+            add_to_dict(profits, fund, -price * amount)
             add_to_dict(fund_dict, fund, amount)
 
     # clear the funds that have been sold out.
@@ -68,4 +64,13 @@ def calculate_fund_profit(df, excluded_funds) -> float:
         if fund_dict[fund] == 0:
             fund_dict.pop(fund)
 
-    return balance + get_fund_worth(fund_dict)
+    fund_data = get_fund_data()
+    current_worth = get_fund_worth(fund_dict, {k: v[1] for k, v in fund_data.items()})
+    for fund in profits:
+        fund_name = fund_data[FUND_ID_TO_CODE[fund]][0]
+        if fund in current_worth.keys():
+            print(f"[bold yellow]({fund}) {fund_name}:[/bold yellow] Potential Profit:  {get_currency_string(profits[fund] + current_worth[fund])}")
+        else:
+            print(f"[bold yellow]({fund}) {fund_name}:[/bold yellow] Cached Out Profit: {get_currency_string(profits[fund])}")
+
+    return sum(list(profits.values())) + sum(list(current_worth.values()))

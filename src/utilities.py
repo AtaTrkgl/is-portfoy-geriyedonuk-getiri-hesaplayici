@@ -9,3 +9,17 @@ def add_to_dict(dictionary: dict, key: str, value: float):
         dictionary[key] += value
     else:
         dictionary[key] = value
+
+def get_currency_string(val: float) -> str:
+    color = ""
+    sign = ""
+    if val > 0:
+        color = "bold green"
+        sign = "+"
+    elif val < 0:
+        color = "bold red"
+        sign = "-"
+    else:
+        color = "bold gray"
+
+    return f"[{color}]{sign}{abs(val):.2f}₺[/{color}]"

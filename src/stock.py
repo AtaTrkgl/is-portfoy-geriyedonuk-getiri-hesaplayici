@@ -1,6 +1,7 @@
 import yfinance as yf
+from rich import print
 
-from utilities import currency_to_number, add_to_dict
+from utilities import add_to_dict, get_currency_string
 
 SELL_STOCK_CODE = "QZ"
 BUY_STOCK_CODE = "QA"
@@ -8,27 +9,22 @@ BUY_STOCK_CODE_SECONDARY = "ZG"
 PUBLIC_OFFER_CODE = "HX"
 
 
-def get_stock_prices(stocks_dict: dict) -> float:
+def get_stocks_worth(stocks_dict: dict) -> dict:
     stocks = stocks_dict.keys() 
-    if len(stocks) == 0:
-        return 0
 
-    balance = 0
-    print("You still have stocks that you haven't sold out yet.")
-    print("Calculated the following worth from the stocks you own:\n")
+    current_values = {}
     for stock in stocks:
         stock_info = yf.Ticker(f"{stock}.IS").info
         price = stock_info["regularMarketPrice"]
 
-        print(f"{stock} is now worth {price} per slot, making a total of {stocks_dict[stock] * price:.2f}₺")
-        balance += stocks_dict[stock] * price
+        add_to_dict(current_values, stock, stocks_dict[stock] * price)
     
-    return balance
+    return current_values
 
 
 def calculate_stock_profit(df, excluded_stocks) -> float:
     stock_inventory = {}
-    profit = 0
+    profits = {}
     total_commision = 0
 
     for i in reversed(range(1, len(df["İşlem"]) + 1)):
@@ -44,7 +40,7 @@ def calculate_stock_profit(df, excluded_stocks) -> float:
             amount = float(splited_desc[-1])
             price = float(splited_desc[-3])
             
-            profit -= price * amount
+            add_to_dict(profits, stock, -price * amount)
             add_to_dict(stock_inventory, stock, amount)
 
         # Buying a stock
@@ -54,17 +50,15 @@ def calculate_stock_profit(df, excluded_stocks) -> float:
             price = abs(float(splited_desc[-3]))
 
             total_commision += commision
+            add_to_dict(profits, stock, -price * amount - commision)
             if price > 0:
-                profit -= price * amount + commision
                 add_to_dict(stock_inventory, stock, amount)
-            else:
-                profit -= commision
 
         if action_type == BUY_STOCK_CODE_SECONDARY:
             amount = abs(float(splited_desc[-1]))
             price = abs(float(splited_desc[-3]))
 
-            profit -= price * amount
+            add_to_dict(profits, stock, -price * amount)
             add_to_dict(stock_inventory, stock, amount)
 
         # Selling a stock
@@ -73,8 +67,8 @@ def calculate_stock_profit(df, excluded_stocks) -> float:
             amount = abs(float(splited_desc[-1]))
             price = abs(float(splited_desc[-3]))
 
-            profit += price * amount - commision
             total_commision += commision
+            add_to_dict(profits, stock, price * amount - commision)
             add_to_dict(stock_inventory, stock, -amount)
 
     # clear the stocks that have been sold out.
@@ -83,5 +77,13 @@ def calculate_stock_profit(df, excluded_stocks) -> float:
         if stock_inventory[key] == 0:
             stock_inventory.pop(key)
 
-    return profit + get_stock_prices(stock_inventory), total_commision
+    
+    current_worth = get_stocks_worth(stock_inventory)
+    for stock in profits:
+        if stock in current_worth.keys():
+            print(f"[bold yellow]{stock}:[/bold yellow] Potential Profit:  {get_currency_string(profits[stock] + current_worth[stock])}")
+        else:
+            print(f"[bold yellow]{stock}:[/bold yellow] Cached Out Profit: {get_currency_string(profits[stock])}")
+
+    return sum(list(profits.values())) + sum(list(current_worth.values())), total_commision
    
