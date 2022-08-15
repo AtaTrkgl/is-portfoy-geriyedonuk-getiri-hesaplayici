@@ -36,9 +36,9 @@ if __name__ == "__main__":
     console = Console()
     console.clear()
 
-    print(f"[italic white] Calculating profits since {start_date.strftime(DATE_FORMAT)}" + (
-        f", [italic white] Excluding stocks: {excluded_stocks}" if excluded_stocks != [""] else "") + (
-        f", [italic white] Excluding funds: {excluded_funds}" if excluded_funds != [""] else ""))
+    print(f"[italic white]Calculating profits since {start_date.strftime(DATE_FORMAT)}" + (
+        f", [italic white]excluding stocks: {excluded_stocks}" if excluded_stocks != [""] else "") + (
+        f", [italic white]excluding funds: {excluded_funds}" if excluded_funds != [""] else ""))
 
     # === Read the account history file ===
 
