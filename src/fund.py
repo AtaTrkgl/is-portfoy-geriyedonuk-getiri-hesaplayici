@@ -23,9 +23,14 @@ def get_fund_data() -> dict:
         if len(table_data) == 0:
             continue
 
+        unit_price = table_data[4].find("a").contents[0]
+        
+        # New funds will sometimes have no price and will be listed as "-".
+        if unit_price == "-":continue
+        
         data_dict[span.contents[0]] = (
             table_data[1].find("a").contents[0].replace("*", "").strip(),
-            currency_to_number(table_data[4].find("a").contents[0]),
+            currency_to_number(unit_price),
         )
     
     return data_dict
