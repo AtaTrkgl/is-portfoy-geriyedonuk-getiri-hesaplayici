@@ -1,3 +1,8 @@
+![GitHub repo size](https://img.shields.io/github/repo-size/Atatrkgl/is-portfoy-geriyedonuk-getiri-hesaplayici?label=Repository%20Size&logo=github&style=flat-square)
+![GitHub](https://img.shields.io/github/license/Atatrkgl/is-portfoy-geriyedonuk-getiri-hesaplayici?label=License&style=flat-square)
+![GitHub issues](https://img.shields.io/github/issues-raw/Atatrkgl/is-portfoy-geriyedonuk-getiri-hesaplayici?label=Issues&style=flat-square)
+![GitHub Repo stars](https://img.shields.io/github/stars/Atatrkgl/is-portfoy-geriyedonuk-getiri-hesaplayici?label=Stars&style=flat-square)
+
 <div align=center>
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/%C4%B0%C5%9F_Portf%C3%B6y_Logo.png/800px-%C4%B0%C5%9F_Portf%C3%B6y_Logo.png" align=center height=100>
 
