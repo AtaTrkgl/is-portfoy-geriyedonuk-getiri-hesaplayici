@@ -1,5 +1,5 @@
 # Accout details
-*.xls
+data/*.xls
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

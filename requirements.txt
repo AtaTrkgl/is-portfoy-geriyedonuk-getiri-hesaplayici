@@ -1,5 +1,5 @@
-beautifulsoup4==4.11.1
+beautifulsoup4==4.12.3
 pandas==1.4.2
 requests==2.27.1
-rich==12.5.1
+rich==13.9.4
 yfinance==0.1.74
